@@ -86,16 +86,15 @@ resource "aws_s3_bucket_notification" "lambda-trigger" {
 
 locals {
   nombre-apprunner      = "apprunner-EjFinal-terraform"
-  connection_arn_github = "arn:aws:apprunner:eu-west-3:757967241514:connection/github-containers/8a91462f6503486ca4558e011a7700e6"
-  build_command         = "pip install -r requirements.txt"
-  port                  = "5000"
+  build_command         = "pip install -r web/requirements.txt"
+  puerto                  = "5000"
   runtime               = "PYTHON_3"
-  start_command         = "python app.py"
-  repository_url        = "https://github.com/juanadevesat/prueba-github-actions"
+  start_command         = "python web/app.py"
+  url_repositorio        = "https://github.com/juanadevesat/juan-EjFinal-terraform"
   source_code_version   = {type="BRANCH", value="main"}
 }
 
-# Creamos una nueva conexión con github. Nos pedirá autenticación.
+# Creamos una nueva conexión con github. Nos pedirá autenticación. Obtenemos la ARN.
 resource "aws_apprunner_connection" "conexion_github" {
   provider_type = "GITHUB"
   connection_name = "github-terraform"
@@ -111,9 +110,9 @@ module "apprunner" {
   nombre-apprunner      = local.nombre-apprunner
   connection_arn_github = aws_apprunner_connection.conexion_github.arn
   build_command         = local.build_command
-  port                  = local.port
+  port                  = local.puerto
   runtime               = local.runtime
   start_command         = local.start_command
-  repository_url        = local.repository_url
+  repository_url        = local.url_repositorio
   source_code_version   = local.source_code_version
 }
