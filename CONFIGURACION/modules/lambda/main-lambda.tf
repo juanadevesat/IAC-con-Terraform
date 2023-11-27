@@ -1,5 +1,8 @@
 resource "aws_iam_role" "lambda_role" {
   name = "rol-${var.nombre-lambda}"
+  
+  managed_policy_arns  = var.permisos
+  
   assume_role_policy = jsonencode({
     "Version": "2012-10-17",
     "Statement": [
@@ -12,8 +15,6 @@ resource "aws_iam_role" "lambda_role" {
         }
     ]
 })
-
-managed_policy_arns  = var.permisos
 }
 
 data "archive_file" "zip_the_python_code" {

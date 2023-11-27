@@ -500,7 +500,7 @@ if __name__ == '__main__':
 
 ## App Runner:
 
-Si contenerizamos los ficheros anteriores y los desplegamos manualmente a través de apprunner, habremos logrado una página web funcional. Sin embargo, para lograr una implementación y un despliegue contínuos vamos a necesitar un repositorio de github conectado a apprunner. De este modo, cada vez que github reciba una actualización, apprunner volverá a desplegar la web con los ficheros actualizados en github. Para lograrlo primero necesitamos crear un nuevo repositorio y posteriormente una nueva conexión con github desde el despliegue manual de apprunner:
+Si contenerizamos los ficheros anteriores y los desplegamos manualmente a través de apprunner, habremos logrado una página web funcional. Sin embargo, para lograr una implementación y un despliegue contínuos vamos a necesitar un repositorio de github conectado a apprunner. De este modo, cada vez que github reciba una actualización, apprunner volverá a desplegar la web con los ficheros actualizados en github. Para lograrlo primero necesitamos crear un nuevo repositorio y posteriormente una nueva conexión con github desde apprunner:
 
 ![Alt text](img/07-github-connection-A.png)
 
