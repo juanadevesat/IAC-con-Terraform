@@ -378,11 +378,19 @@ output "arn-lambda" {
 
 La página web que utilizaremos es la siguiente:
 
+Formulario:
+
 ![Alt text](img/06-Captura-formulario.png)
+
+Pantalla de carga:
+
+![Alt text](img/06-Captura-cargando.png)
+
+Tabla de datos:
 
 ![Alt text](img/06-Captura-tabla.png)
 
-Esta página tiene 3 ficheros html y un fichero css, que son poco informativos, y el siguiente fichero de python para el backend:
+Esta página tiene 4 ficheros html y un fichero css, que son poco informativos, y el siguiente fichero de python para el backend:
 
 **app.py**:
 
@@ -466,11 +474,20 @@ def index():
             try:
                 # Guardamos los datos del usuario en un archivo JSON en cloud storage                
                 s3.put_object(Bucket=nombre_bucket, Key=f'usuarios{todayUTC}.json', Body=json.dumps(usuario))
-                time.sleep(5)
-                return redirect("/data")
+                return redirect("/loading")
             except:
                 flash("¡Ha ocurrido un error! No se han almacenado los datos.")
                 return render_template("index.html")
+
+@app.route("/loading")
+def loading():
+    """
+    Definición: Endpoint para la página de espera mientras carga la tabla.
+
+    Return: loading.html
+    """
+    return render_template("loading.html")
+
 
 @app.route("/data")
 def data():
@@ -495,7 +512,6 @@ def data():
 if __name__ == '__main__':
     # Ejecuta la aplicación
     app.run(host="0.0.0.0", port=5000, debug=False)
-
 ```
 
 ## App Runner:
@@ -504,25 +520,178 @@ Si contenerizamos los ficheros anteriores y los desplegamos manualmente a travé
 
 ![Alt text](img/07-github-connection-A.png)
 
-Seguimos los pasos y nos conectamos al repositorio que acabamos de crear. Una vez completado la conexión con github, debemos agregarle el permiso *AWSAppRunnerFullAccess* a nuestro usuario IAM de terraform cloud para que pueda utilizar apprunner. Hecho esto, podemos empezar a desarrollar nuestro módulo de apprunner. 
+Seguimos los pasos y nos conectamos al repositorio que acabamos de crear. Una vez completado la conexión con github, debemos agregarle nuevos permisos a nuestro usuario IAM de terraform cloud para que pueda utilizar apprunner. En primer lugar agregaremos la política *AWSAppRunnerFullAccess* y luego modificaremos la política que creamos anteriormente para agregarle los permisos *iam:PassRole* y *iam:UpdateAssumeRolePolicy*.
 
-Dar permiso *iam:PassRole* *iam:UpdateAssumeRolePolicy* y *AWSAppRunnerFullAccess* al usuario
-crear un rol para el recurso que tenga permisos de escritura en el bucket y permisos de lectura en la base de datos:
+Hecho esto, podemos empezar a desarrollar nuestro módulo de apprunner. Para empezar, tenemos que crear un rol para el recurso que tenga permisos de escritura en el bucket y permisos de lectura en la base de datos:
 
+**main-apprunner.tf**:
 
+```tf
+resource "aws_iam_role" "rol-apprunner" {
+    name = "rol-${var.nombre-apprunner}"
 
+    managed_policy_arns  = var.policies
 
+    assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sts:AssumeRole"
+            ],
+            "Principal": {
+                "Service": [
+                    "tasks.apprunner.amazonaws.com"
+                ]
+            }
+        }
+    ]
+})
+}
+```
 
-https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apprunner_service
+Seguidamente creamos el recurso apprunner:
 
-1 - Crear conexión a un github con los ficheros de la web
-2 - Crear rol para apprunner
-3 - crear apprunner con trigger automatico
-  - runtime python 3
-  - build command "pip install -r requirements.txt"
-  - start command "python app.py"
-  - port 5000
-  - service name "despliegue-apprunner"
-  - virtualCPU 1
-  - Virtual memory 2
-  - asignar rol
+**main-apprunner.tf**:
+
+```tf
+resource "aws_apprunner_service" "apprunner" {
+  service_name = var.nombre-apprunner
+
+  source_configuration {
+    authentication_configuration {
+      connection_arn = var.connection_arn_github
+    }
+    code_repository {
+      code_configuration {
+        code_configuration_values {
+          build_command = var.build_command
+          port          = var.port
+          runtime       = var.runtime
+          start_command = var.start_command
+        }
+        configuration_source = "API"
+      }
+      repository_url = var.repository_url
+      source_code_version {
+        type  = var.source_code_version.type
+        value = var.source_code_version.value
+      }
+    }
+  }
+
+  instance_configuration {
+    cpu = var.conf_instance.cpu
+    memory = var.conf_instance.memory
+
+    instance_role_arn = aws_iam_role.rol-apprunner.arn
+  }
+
+  network_configuration {
+    egress_configuration {
+      egress_type       = "DEFAULT"
+    }
+  }
+
+  tags = {
+    Name = var.nombre-apprunner
+  }
+}
+```
+
+Las variables del módulo se definirán de la siguiente manera:
+
+**variables-apprunner.tf**:
+
+```tf
+variable "nombre-apprunner" {
+    description = "Nombre para el servicio de apprunner"
+    type = string
+}
+
+variable "connection_arn_github" {
+    description = "ARN de la conexión entre github y AppRunner. Imprescindible para conexion con repositorios github"
+    type = string
+}
+
+variable "build_command" {
+    description = "Comando de AppRunner que se ejecuta para crear la aplicación"
+    type = string
+}
+
+variable "port" {
+    description = "Puerto que escucha su aplicación en el contenedor"
+    type = string
+}
+
+variable "runtime" {
+    description = "Tipo de entorno de ejecución para crear y ejecutar un servicio App Runner"
+    type = string
+}
+
+variable "start_command" {
+    description = "Comando de AppRunner que se ejecuta para iniciar la aplicación"
+    type = string
+}
+
+variable "repository_url" {
+    description = "Ubicación del repositorio que contiene el código fuente"
+    type = string
+}
+
+variable "source_code_version" {
+    description = "bloque admite los siguientes argumentos: type: Tipo de identificador. Valores válidos: BRANCH; value: rama que se utiliza"
+    type = map(string)
+}
+
+variable "conf_instance" {
+    description = "configuración de las instancias creadas. cpu = numero de procesadores, memory = memoria RAM en GB"
+    type = map(string)
+}
+
+variable "policies" {
+    description = "Políticas de permisos para la instancia de apprunner"
+    type = list(string)
+}
+```
+
+Finalmente, en nuestro terraform raiz, definiremos valores para las variables, importaremos los datos de los permisos para el rol y crearemos el módulo:
+
+**main.tf**:
+
+```tf
+locals {
+  nombre-apprunner      = "despliegue-apprunner"
+  connection_arn_github = "arn:aws:apprunner:eu-west-3:757967241514:connection/github-containers/8a91462f6503486ca4558e011a7700e6"
+  build_command         = "pip install -r web/requirements.txt"
+  puerto                = "5000"
+  runtime               = "PYTHON_3"
+  start_command         = "python web/app.py"
+  url_repositorio       = "https://github.com/juanadevesat/juan-EjFinal-terraform"
+  source_code_version   = {type = "BRANCH", value = "main"}
+  conf_instancia        = {cpu = "1 vCPU", memory = "2 GB"}
+  politicas_instancia    = ["AmazonDynamoDBReadOnlyAccess", "AmazonS3FullAccess"]
+}
+
+data "aws_iam_policy" "politicas-apprunner" {
+  count = length(local.politicas_instancia)
+
+  name = local.politicas_instancia[count.index]
+}
+
+module "apprunner" {
+  source = "./modules/apprunner"
+
+  nombre-apprunner      = local.nombre-apprunner
+  connection_arn_github = local.connection_arn_github
+  build_command         = local.build_command
+  port                  = local.puerto
+  runtime               = local.runtime
+  start_command         = local.start_command
+  repository_url        = local.url_repositorio
+  source_code_version   = local.source_code_version
+  conf_instance         = local.conf_instancia
+  policies              = [ for politica in data.aws_iam_policy.politicas-apprunner : politica.arn ]
+}
+```

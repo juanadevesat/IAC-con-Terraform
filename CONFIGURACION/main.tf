@@ -85,7 +85,7 @@ resource "aws_s3_bucket_notification" "lambda-trigger" {
 # ---------------------- PARTE 2 ----------------------
 
 locals {
-  nombre-apprunner      = "apprunner-EjFinal-terraform"
+  nombre-apprunner      = "despliegue-apprunner"
   connection_arn_github = "arn:aws:apprunner:eu-west-3:757967241514:connection/github-containers/8a91462f6503486ca4558e011a7700e6"
   build_command         = "pip install -r web/requirements.txt"
   puerto                = "5000"

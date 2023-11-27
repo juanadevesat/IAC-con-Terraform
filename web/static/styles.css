@@ -38,6 +38,7 @@ main {
     text-align: center;
 }
 
+/* Start of waiting animation */
 .lds-facebook {
     display: inline-block;
     position: relative;
@@ -49,7 +50,7 @@ main {
     position: absolute;
     left: 8px;
     width: 16px;
-    background: #fff;
+    background: #d9534f;
     animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
   }
   .lds-facebook div:nth-child(1) {
@@ -74,4 +75,4 @@ main {
       height: 32px;
     }
   }
-  
+  /* End of waiting animation */

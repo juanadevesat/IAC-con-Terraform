@@ -77,11 +77,20 @@ def index():
             try:
                 # Guardamos los datos del usuario en un archivo JSON en cloud storage                
                 s3.put_object(Bucket=nombre_bucket, Key=f'usuarios{todayUTC}.json', Body=json.dumps(usuario))
-                time.sleep(5)
-                return redirect("/data")
+                return redirect("/loading")
             except:
                 flash("¡Ha ocurrido un error! No se han almacenado los datos.")
                 return render_template("index.html")
+
+@app.route("/loading")
+def loading():
+    """
+    Definición: Endpoint para la página de espera mientras carga la tabla.
+
+    Return: loading.html
+    """
+    return render_template("loading.html")
+
 
 @app.route("/data")
 def data():

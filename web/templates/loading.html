@@ -4,6 +4,18 @@
     Tabla de usuarios
 {% endblock %}
 
+{% block script %}
+    <script>
+        function navigate() {
+        window.location.href = 'data';  // redirect when done!
+        }
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        sleep(3000).then(navigate); // load the slow url then navigate
+    </script>
+{% endblock %}
+
 {% block main %}
     <h3 class="section-title">Tabla de usuarios</h3>
     <table class="table mx-auto w-50">
@@ -15,15 +27,8 @@
                 <th scope="col">Fecha de registro</th>
             </tr>
         </thead>
-        <tbody>
-        {% for item in items %}
-            <tr>
-                <td class="center-align">{{ item["ID"] }}</td>
-                <td class="center-align">{{ item["nombre"] }}</td>
-                <td class="center-align">{{ item["email"] }}</td>
-                <td class="center-align">{{ item["registro"] }}</td>
-            </tr>
-        {% endfor %}
-        </tbody>
     </table>
+    <br>
+    <div class="lds-facebook"><div></div><div></div><div></div>
+
 {% endblock %}
