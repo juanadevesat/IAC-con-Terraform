@@ -506,7 +506,8 @@ Si contenerizamos los ficheros anteriores y los desplegamos manualmente a travé
 
 Seguimos los pasos y nos conectamos al repositorio que acabamos de crear. Una vez completado la conexión con github, debemos agregarle el permiso *AWSAppRunnerFullAccess* a nuestro usuario IAM de terraform cloud para que pueda utilizar apprunner. Hecho esto, podemos empezar a desarrollar nuestro módulo de apprunner. 
 
-????????????????????????? El primer paso es crear un rol para el recurso que tenga permisos de escritura en el bucket y permisos de lectura en la base de datos:
+Dar permiso *iam:PassRole* *iam:UpdateAssumeRolePolicy* y *AWSAppRunnerFullAccess* al usuario
+crear un rol para el recurso que tenga permisos de escritura en el bucket y permisos de lectura en la base de datos:
 
 
 

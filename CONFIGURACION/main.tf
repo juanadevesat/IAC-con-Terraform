@@ -86,13 +86,21 @@ resource "aws_s3_bucket_notification" "lambda-trigger" {
 
 locals {
   nombre-apprunner      = "apprunner-EjFinal-terraform"
-  connection_arn_github = "arn:aws:apprunner:eu-west-3:757967241514:connection/github-terraform/11449fc7e00b454d81396a6317de1002"
+  connection_arn_github = "arn:aws:apprunner:eu-west-3:757967241514:connection/github-containers/8a91462f6503486ca4558e011a7700e6"
   build_command         = "pip install -r web/requirements.txt"
   puerto                = "5000"
   runtime               = "PYTHON_3"
   start_command         = "python web/app.py"
   url_repositorio       = "https://github.com/juanadevesat/juan-EjFinal-terraform"
-  source_code_version   = {type="BRANCH", value="main"}
+  source_code_version   = {type = "BRANCH", value = "main"}
+  conf_instancia        = {cpu = "1 vCPU", memory = "2 GB"}
+  politicas_instancia    = ["AmazonDynamoDBReadOnlyAccess", "AmazonS3FullAccess"]
+}
+
+data "aws_iam_policy" "politicas-apprunner" {
+  count = length(local.politicas_instancia)
+
+  name = local.politicas_instancia[count.index]
 }
 
 module "apprunner" {
@@ -106,4 +114,6 @@ module "apprunner" {
   start_command         = local.start_command
   repository_url        = local.url_repositorio
   source_code_version   = local.source_code_version
+  conf_instance         = local.conf_instancia
+  policies              = [ for politica in data.aws_iam_policy.politicas-apprunner : politica.arn ]
 }

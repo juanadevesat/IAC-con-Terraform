@@ -37,3 +37,15 @@ variable "source_code_version" {
     description = "bloque admite los siguientes argumentos: type: Tipo de identificador. Valores válidos: BRANCH; value: rama que se utiliza"
     type = map(string)
 }
+
+variable "conf_instance" {
+    description = "configuración de las instancias creadas. cpu = numero de procesadores, memory = memoria RAM en GB"
+    type = map(string)
+}
+
+variable "policies" {
+    description = "Políticas de permisos para la instancia de apprunner"
+    type = list(string)
+}
+  
+  

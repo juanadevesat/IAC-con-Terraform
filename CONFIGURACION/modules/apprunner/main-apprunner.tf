@@ -1,3 +1,28 @@
+resource "aws_iam_role" "rol-apprunner" {
+    name = "rol-${var.nombre-apprunner}"
+
+    managed_policy_arns  = var.policies
+
+    assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sts:AssumeRole"
+            ],
+            "Principal": {
+                "Service": [
+                    "tasks.apprunner.amazonaws.com"
+                ]
+            }
+        }
+    ]
+})
+}
+
+
+
 resource "aws_apprunner_service" "apprunner" {
   service_name = var.nombre-apprunner
 
@@ -21,6 +46,13 @@ resource "aws_apprunner_service" "apprunner" {
         value = var.source_code_version.value
       }
     }
+  }
+
+  instance_configuration {
+    cpu = var.conf_instance.cpu
+    memory = var.conf_instance.memory
+
+    instance_role_arn = aws_iam_role.rol-apprunner.arn
   }
 
   network_configuration {
