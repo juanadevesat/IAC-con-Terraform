@@ -1,0 +1,39 @@
+body {
+    background-color: #252525;
+}
+
+main {
+    margin-top: 50px;
+}
+
+.navbar {
+    margin-bottom: 20px;
+}
+
+.nav-link, .navbar-brand, .navbar-brand:hover, .section-title {
+    color: white;
+}
+
+.nav-link:hover{
+    color: lightgray;
+}
+
+.logo {
+    width: 70px;
+    padding-right: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.table {
+    color: lightgray
+}
+
+.form-control:focus {
+    border-color: #d9534f;
+    box-shadow: 0 0 0 0.15rem #d9534f;
+} 
+
+.alert{
+    text-align: center;
+}
