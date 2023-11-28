@@ -117,3 +117,4 @@ module "apprunner" {
   conf_instance         = local.conf_instancia
   policies              = [ for politica in data.aws_iam_policy.politicas-apprunner : politica.arn ]
 }
+

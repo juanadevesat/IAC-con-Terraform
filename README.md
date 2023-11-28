@@ -656,6 +656,10 @@ variable "policies" {
 }
 ```
 
+Ahora es el momento de localizar el ARN de nuestra conexión con github. Lo encontaremos en la pestaña de cuentas conectadas, en AWS Apprunner:
+
+![Alt text](img/07-github-connection-B.png)
+
 Finalmente, en nuestro terraform raiz, definiremos valores para las variables, importaremos los datos de los permisos para el rol y crearemos el módulo:
 
 **main.tf**:
@@ -695,3 +699,7 @@ module "apprunner" {
   policies              = [ for politica in data.aws_iam_policy.politicas-apprunner : politica.arn ]
 }
 ```
+
+El resultado final de nuestra arquitectura seria la siguiente:
+
+![Alt text](img/08-fin-pt2.png)
